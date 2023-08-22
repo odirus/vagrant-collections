@@ -1,0 +1,34 @@
+Vagrant.configure("2") do |config|
+  config.vm.box_check_update = false
+
+  config.vm.provision "shell", inline: <<-SHELL
+    echo "172.16.81.80  master" >> /etc/hosts
+    echo "172.16.81.81  worker1" >> /etc/hosts
+  SHELL
+    
+  config.vm.define "master" do |master|
+    master.vm.box = "bento/ubuntu-20.04-arm64"
+    master.vm.hostname = "master"
+    master.vm.network "private_network", ip: "172.16.81.80", auto_network: false
+    master.vm.provider "vmware_fusion" do |vb|
+      vb.memory = 4096
+      vb.cpus = 2
+    end
+    master.vm.provision "shell", path: "scripts/common.sh"
+    master.vm.provision "shell", path: "scripts/master.sh"
+  end
+
+  (1..1).each do |i|
+    config.vm.define "worker#{i}" do |worker|
+      worker.vm.box = "bento/ubuntu-20.04-arm64"
+      worker.vm.hostname = "worker#{i}"
+      worker.vm.network "private_network", ip: "172.16.81.8#{i}"
+      worker.vm.provider "vmware_fusion" do |vb|
+        vb.memory = 8192
+        vb.cpus = 2
+      end
+      worker.vm.provision "shell", path: "scripts/common.sh"
+      worker.vm.provision "shell", path: "scripts/worker.sh"
+    end
+  end
+end

@@ -1,0 +1,4 @@
+**/.DS_Store
+.vagrant/
+vagrant-k8s/configs/config
+vagrant-k8s/configs/join.sh
