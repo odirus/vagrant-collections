@@ -1,5 +1,6 @@
 #! /bin/bash
 
+ARCH=$(dpkg --print-architecture)
 MASTER_IP=$(grep master /etc/hosts | tail -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
 NODENAME=$(hostname -s)
 SERVICE_CIDR="172.21.0.0/20"
@@ -35,12 +36,16 @@ sudo chmod +x $config_path/join.sh
 
 kubeadm token create --print-join-command > $config_path/join.sh
 
+# allow master schedule
+kubectl taint nodes master node-role.kubernetes.io/control-plane:NoSchedule-
+kubectl taint nodes master node-role.kubernetes.io/master:NoSchedule-
+
 # install heml
-sudo tar -zxvf /vagrant/host_configs/helm-v3.9.0-linux-arm64.tar.gz
-sudo mv linux-arm64/helm /usr/local/bin
+sudo tar -zxvf /vagrant/host_configs/helm-v3.9.0-linux-$ARCH.tar.gz
+sudo mv linux-$ARCH/helm /usr/local/bin
 
 # istio
-tar -xzvf /vagrant/host_configs/istio-1.16.0-linux-arm64.tar.gz
+tar -xzvf /vagrant/host_configs/istio-1.16.0-linux-$ARCH.tar.gz
 
 # install calico
 helm install calico /vagrant/host_configs/chart/calico/tigera-operator-v3.23.1.tgz -n kube-system  --create-namespace -f /vagrant/host_configs/chart/calico/values.yaml

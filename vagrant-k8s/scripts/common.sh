@@ -1,6 +1,9 @@
-KUBERNETES_VERSION="1.24.6-00"
+sudo sed -i 's@/swap.img@#/swap.img@' -i /etc/fstab
 
-sudo cp /vagrant/host_configs/sources.list.20.04 /etc/apt/sources.list
+KUBERNETES_VERSION="1.24.6-00"
+ARCH=$(dpkg --print-architecture)
+
+sudo cp /vagrant/host_configs/sources.list.$ARCH /etc/apt/sources.list
 sudo apt-get update -y
 sudo apt-get install -y apt-transport-https ca-certificates curl wget software-properties-common
 
@@ -19,9 +22,9 @@ sudo perl -i -0pe 's/registry\]\n\s+config_path = ""/registry\]\n\      config_p
 sudo systemctl restart containerd
 sudo systemctl status containerd
 
-sudo install -m 755 /vagrant/host_configs/runc-v1.1.2.arm64 /usr/local/sbin/runc
+sudo install -m 755 /vagrant/host_configs/runc-v1.1.2.$ARCH /usr/local/sbin/runc
 sudo mkdir -p /opt/cni/bin
-sudo tar Cxzvf /opt/cni/bin /vagrant/host_configs/cni-plugins-linux-arm64-v1.1.1.tgz
+sudo tar Cxzvf /opt/cni/bin /vagrant/host_configs/cni-plugins-linux-$ARCH-v1.1.1.tgz
 
 ## 关闭 swap 分区
 swapoff -a
